@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalkulator Bunga dan Anuitas</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="style.css"> <!-- Pastikan file style.css ada di folder yang sama -->
+</head>
+<body>
+    <div class="navbar">
+        <a href="#" onclick="showPage('landing')" class="active">Beranda</a>
+        <a href="#" onclick="showPage('bunga-tunggal')">Bunga Tunggal</a>
+        <a href="#" onclick="showPage('bunga-majemuk')">Bunga Majemuk</a>
+        <a href="#" onclick="showPage('anuitas')">Anuitas</a>
+    </div>
+
+    <div class="container text-center" id="landing">
+        <h1 class="mt-5">Selamat Datang di Kalkulator Bunga dan Anuitas</h1>
+        <img src="https://cdn-icons-png.flaticon.com/512/746/746050.png" alt="Logo Rumah" class="logo mb-4" style="width: 150px;">
+        <p>Pilih jenis kalkulator di atas untuk mulai menghitung.</p>
+    </div>
+
+    <div class="container" id="bunga-tunggal" style="display: none;">
+        <h2>Bunga Tunggal</h2>
+        <label for="M">Modal Awal (M): </label>
+        <input type="number" id="M_tunggal" placeholder="Masukkan modal" class="form-control mb-2"><br>
+
+        <label for="b">Bunga (% per tahun): </label>
+        <input type="number" id="b_tunggal" placeholder="Masukkan bunga" class="form-control mb-2"><br>
+
+        <label for="t">Waktu: </label>
+        <input type="number" id="t_tunggal" placeholder="Masukkan waktu" class="form-control mb-2">
+        <select id="time_unit_tunggal" class="form-control mb-2">
+            <option value="1">Tahun</option>
+            <option value="12">Bulan</option>
+            <option value="6">Semester</option>
+            <option value="4">Caturwulan</option>
+            <option value="3">Triwulan</option>
+        </select><br>
+
+        <button onclick="hitungBungaTunggal()" class="btn btn-primary">Hitung Bunga Tunggal</button>
+        <p id="hasil_tunggal" class="mt-3"></p>
+    </div>
+
+    <div class="container" id="bunga-majemuk" style="display: none;">
+        <h2>Bunga Majemuk</h2>
+        <label for="M">Modal Awal (M): </label>
+        <input type="number" id="M_majemuk" placeholder="Masukkan modal" class="form-control mb-2"><br>
+
+        <label for="b">Bunga (% per tahun): </label>
+        <input type="number" id="b_majemuk" placeholder="Masukkan bunga" class="form-control mb-2"><br>
+
+        <label for="t">Waktu: </label>
+        <input type="number" id="t_majemuk" placeholder="Masukkan waktu" class="form-control mb-2">
+        <select id="time_unit_majemuk" class="form-control mb-2">
+            <option value="1">Tahun</option>
+            <option value="12">Bulan</option>
+            <option value="6">Semester</option>
+            <option value="4">Caturwulan</option>
+            <option value="3">Triwulan</option>
+        </select><br>
+
+        <button onclick="hitungBungaMajemuk()" class="btn btn-primary">Hitung Bunga Majemuk</button>
+        <p id="hasil_majemuk" class="mt-3"></p>
+    </div>
+
+    <div class="container" id="anuitas" style="display: none;">
+        <h2>Anuitas</h2>
+        <label for="M">Modal Awal (M): </label>
+        <input type="number" id="M_anuitas" placeholder="Masukkan modal" class="form-control mb-2"><br>
+
+        <label for="b">Bunga (% per tahun): </label>
+        <input type="number" id="b_anuitas" placeholder="Masukkan bunga" class="form-control mb-2"><br>
+
+        <label for="t">Waktu: </label>
+        <input type="number" id="t_anuitas" placeholder="Masukkan waktu" class="form-control mb-2">
+        <select id="time_unit_anuitas" class="form-control mb-2">
+            <option value="1">Tahun</option>
+            <option value="12">Bulan</option>
+            <option value="6">Semester</option>
+            <option value="4">Caturwulan</option>
+            <option value="3">Triwulan</option>
+        </select><br>
+
+        <button onclick="hitungAnuitas()" class="btn btn-primary">Hitung Anuitas</button>
+        <p id="hasil_anuitas" class="mt-3"></p>
+
+        <!-- Tabel untuk menampilkan hasil Anuitas -->
+        <table class="table mt-4" id="tabel_anuitas" style="display: none;">
+            <thead>
+                <tr>
+                    <th>Periode</th>
+                    <th>Pembayaran</th>
+                    <th>Total Pembayaran</th>
+                    <th>Total Bunga</th>
+                </tr>
+            </thead>
+            <tbody id="anuitas_tbody"></tbody>
+        </table>
+    </div>
+
+    <script>
+        function showPage(page) {
+            const pages = ['landing', 'bunga-tunggal', 'bunga-majemuk', 'anuitas'];
+            pages.forEach(p => {
+                document.getElementById(p).style.display = (p === page) ? 'block' : 'none';
+            });
+            // Update navbar active state
+            const navbarLinks = document.querySelectorAll('.navbar a');
+            navbarLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.innerText === page.replace('-', ' ').toUpperCase()) {
+                    link.classList.add('active');
+                }
+            });
+        }
+
+        // Fungsi untuk memformat angka menjadi format mata uang
+        function formatRupiah(angka) {
+            let format = angka.toString().split('.');
+            let integerPart = format[0];
+            let decimalPart = format.length > 1 ? '.' + format[1] : '';
+            
+            let ribuan = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+            return `Rp ${ribuan}${decimalPart}`;
+        }
+
+        // Fungsi konversi waktu
+        function konversiWaktu(t, unit) {
+            return t / unit; // Konversi semua ke tahun
+        }
+
+        // Fungsi Bunga Tunggal
+        function hitungBungaTunggal() {
+            let M = parseFloat(document.getElementById('M_tunggal').value);
+            let b = parseFloat(document.getElementById('b_tunggal').value) / 100; // Mengubah persen ke desimal
+            let t = parseFloat(document.getElementById('t_tunggal').value);
+            let unit = parseFloat(document.getElementById('time_unit_tunggal').value);
+            
+            t = konversiWaktu(t, unit); // Konversi waktu ke tahun
+            
+            let B = M * b * t;
+            let Mn = M + B;
+            
+            document.getElementById('hasil_tunggal').innerText = `Bunga (B) = ${formatRupiah(B.toFixed(2))}, Modal Akhir (Mn) = ${formatRupiah(Mn.toFixed(2))}`;
+        }
+
+        // Fungsi Bunga Majemuk
+        function hitungBungaMajemuk() {
+            let M = parseFloat(document.getElementById('M_majemuk').value);
+            let b = parseFloat(document.getElementById('b_majemuk').value) / 100;
+            let t = parseFloat(document.getElementById('t_majemuk').value);
+            let unit = parseFloat(document.getElementById('time_unit_majemuk').value);
+            
+            t = konversiWaktu(t, unit);
+            
+            let Mn = M * Math.pow((1 + b), t);
+            
+            document.getElementById('hasil_majemuk').innerText = `Modal Akhir (Mn) = ${formatRupiah(Mn.toFixed(2))}`;
+        }
+
+        // Fungsi Anuitas
+        function hitungAnuitas() {
+            let M = parseFloat(document.getElementById('M_anuitas').value);
+            let b = parseFloat(document.getElementById('b_anuitas').value) / 100;
+            let t = parseFloat(document.getElementById('t_anuitas').value);
+            let unit = parseFloat(document.getElementById('time_unit_anuitas').value);
+            
+            t = konversiWaktu(t, unit);
+            
+            let anuitas = (M * b) / (1 - Math.pow((1 + b), -t));
+            let totalPembayaran = anuitas * t;
+            let totalBunga = totalPembayaran - M;
+
+            document.getElementById('hasil_anuitas').innerText = `Jumlah Anuitas = ${formatRupiah(anuitas.toFixed(2))}`;
+
+            // Tampilkan tabel anuitas
+            const anuitasTbody = document.getElementById('anuitas_tbody');
+            anuitasTbody.innerHTML = ''; // Bersihkan tabel
+            for (let i = 1; i <= t; i++) {
+                anuitasTbody.innerHTML += `
+                    <tr>
+                        <td>${i}</td>
+                        <td>${formatRupiah(anuitas.toFixed(2))}</td>
+                        <td>${formatRupiah(totalPembayaran.toFixed(2))}</td>
+                        <td>${formatRupiah(totalBunga.toFixed(2))}</td>
+                    </tr>
+                `;
+            }
+            document.getElementById('tabel_anuitas').style.display = 'table'; // Tampilkan tabel
+        }
+    </script>
+</body>
+</html>
